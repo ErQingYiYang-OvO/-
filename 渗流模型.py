@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from collections import deque
+from matplotlib.colors import ListedColormap
 
 
 # 蒙特卡洛核心
@@ -68,7 +69,7 @@ class manipulate: # 界面类
         self.p_entry.insert(0,"0.5") # 输入框初始值为0.5，0是索引
 
         tk.Label(control_frame,text="grid size n(>1):").grid(row=1,column=0,padx=5,pady=5)
-        self.n_combo = ttk.Combobox(control_frame,values=[10,20,50,100],width=8) # 创建n的下拉框
+        self.n_combo = ttk.Combobox(control_frame,values=[10,20,50,100,200,500],width=8) # 创建n的下拉框
         self.n_combo.grid(row=1,column=1,padx=5,pady=5) # 放置在1行1列
         self.n_combo.current(0) # 默认选中第0个
 
@@ -127,10 +128,12 @@ class manipulate: # 界面类
                 ocean += 1
         
         if not (p,n) in self.data: # 添加数据
-            self.data[(p,n)] = ocean/N
+            self.data[(p,n)] = []
+        self.data[(p,n)].append(ocean/N) # 每做一次模拟添加一个数据
 
         self.ax_right.clear() # 更新地图显示
-        self.ax_right.imshow(grid,cmap="Blues",interpolation="nearest",vmin=0,vmax=1) # 绘制地图
+        cmap = ListedColormap(["green","blue"]) # 颜色映射
+        self.ax_right.imshow(grid,cmap=cmap,interpolation="nearest",vmin=0,vmax=1) # 绘制地图
         self.ax_right.set_xticks([]) # 隐藏坐标轴  
         self.ax_right.set_yticks([])     
             
@@ -151,7 +154,8 @@ class manipulate: # 界面类
         for (p,n),prob in self.data.items(): # 获取数据
             if n not in groups: # 创建组
                 groups[n] = []
-            groups[n].append((p,prob))
+            avg_prob = np.mean(prob)
+            groups[n].append((p,avg_prob))
 
         for n , points in groups.items(): # 绘制按n分开的折线图
             points.sort() # 按p排序
